@@ -9,47 +9,58 @@ const TrafficLightsProvider = ({ children }) => {
   const [clickCounts, setClickCounts] = useState([]);
   const [settings, setSettings] = useState({ brightness: 1, blinkCount: 2 });
   const [stateFromGoogle, setStateFromGoogle] = useState([]);
+  const [pedestrianStateFromGoogle, setPedestrianStateFromGoogle] = useState([]);
   const [currentLightState, setCurrentLightState] = useState(null);
 
+  const fetchTrafficLights = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/trafficLights`);
+      const data = await res.json();
+      setClickCounts(data?.[orientation] || []);
+    } catch (error) {
+      console.error("Помилка завантаження trafficLights:", error);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/settings`);
+      const data = await res.json();
+      setSettings(data?.[orientation] || { brightness: 1, blinkCount: 2 });
+    } catch (error) {
+      console.error("Помилка завантаження settings:", error);
+    }
+  };
+
+  const fetchGoogleState = async () => {
+    try {
+      const res = await fetch(`${GOOGLE_API_URL}?action=getStateByName&name=${orientation}`);
+      const textData = await res.text();
+      console.log("Received data:", textData);
+      const jsonData = JSON.parse(textData);
+      setStateFromGoogle(jsonData);
+    } catch (error) {
+      console.error("Error fetching state from Google Sheets:", error);
+    }
+  };
+
+  const fetchPedestrianState = async () => {
+    try {
+      const res = await fetch(`${GOOGLE_API_URL}?action=getStateByName&name=${orientation}Pedestrian`);
+      const textData = await res.text();
+      console.log("Received pedestrian data:", textData);
+      const jsonData = JSON.parse(textData);
+      setPedestrianStateFromGoogle(jsonData);
+    } catch (error) {
+      console.error("Error fetching pedestrian state from Google Sheets:", error);
+    }
+  };
+
   useEffect(() => {
-    fetch(`${API_BASE_URL}/trafficLights`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.[orientation]) {
-          setClickCounts(data[orientation]);
-        } else {
-          setClickCounts([]);
-        }
-      })
-      .catch((error) =>
-        console.error("Помилка завантаження trafficLights:", error)
-      );
-
-      fetch(`${API_BASE_URL}/settings`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.[orientation]) {
-          setSettings(data[orientation]);
-        } else {
-          setSettings({ brightness: 1, blinkCount: 2 });
-        }
-      })
-      .catch((error) => console.error("Помилка завантаження settings:", error));
-
-      fetch(`${GOOGLE_API_URL}?action=getStateByName&name=${orientation}`, {
-        method: "GET",
-      })
-        .then((res) => res.text()) 
-        .then((data) => {
-          console.log("Received data:", data);
-          try {
-            const jsonData = JSON.parse(data);
-            setStateFromGoogle(jsonData);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        })
-        .catch((error) => console.error("Error fetching state from Google Sheets:", error));
+    fetchTrafficLights();
+    fetchSettings();
+    fetchGoogleState();
+    fetchPedestrianState();
   }, [orientation]);
 
   const toggleOrientation = () => {
@@ -224,7 +235,8 @@ const TrafficLightsProvider = ({ children }) => {
         stateFromGoogle,
         currentLightState,
         resetClickCounts,
-        setTrafficLightState
+        setTrafficLightState,
+        pedestrianStateFromGoogle 
       }}
     >
       {children}

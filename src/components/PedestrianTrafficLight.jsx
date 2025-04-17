@@ -1,56 +1,70 @@
 import React, { useEffect, useState, useContext } from "react";
 import { TrafficLightsContext } from "../context/TrafficLightsContext";
-import "../сss/PedestrianTrafficLight.css"
+import "../сss/PedestrianTrafficLight.css";
+
+const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbxbmKq8mPeFIOrN-e02iJG_tY7OmMyuxnUVmM4GyvEvf56hkA68HIvpbIQzsQhRuc8rWg/exec";
 
 const PedestrianTrafficLight = () => {
+  const {
+    orientation,
+    pedestrianStateFromGoogle,
+    setTrafficLightState,
+    currentLightState, // потрібен для перевірки стану авто-світлофора
+  } = useContext(TrafficLightsContext);
+
   const [pedestrianState, setPedestrianState] = useState("wait");
-  const [isBlocked, setIsBlocked] = useState(false);
-  const { currentLightState, setTrafficLightState } = useContext(TrafficLightsContext);
+  const [pedestrianId, setPedestrianId] = useState(null);
 
   useEffect(() => {
-    if (currentLightState?.toLowerCase() === "green") {
-      setPedestrianState("wait");
-      setIsBlocked(true);
-    } else {
-      setIsBlocked(false);
+    const stateObj = pedestrianStateFromGoogle?.[0];
+    if (stateObj) {
+      setPedestrianState(stateObj.state.toLowerCase());
+      setPedestrianId(stateObj.id);
     }
-  }, [currentLightState]);
+  }, [pedestrianStateFromGoogle]);
 
+  const updatePedestrianState = (newState) => {
+    if (!pedestrianId) return;
 
-  useEffect(() => {
-    if (pedestrianState === "go") {
-      // Для пішоходів "go" — авто повинно зупинитись → червоне світло
-      setTrafficLightState("Red");
-    } else if (pedestrianState === "wait") {
-      // Пішоходи чекають → авто їде → зелене світло
-      setTrafficLightState("Green");
-    }
-  }, [pedestrianState]);
+    fetch(GOOGLE_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "updateState",
+        id: pedestrianId,
+        state: newState.charAt(0).toUpperCase() + newState.slice(1),
+      }),
+    })
+      .then(() => setPedestrianState(newState))
+      .catch((error) => console.error("Error updating pedestrian state:", error));
+  };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPedestrianState((prev) => {
-        if (!isBlocked) {
-          return prev === "wait" ? "go" : "wait";
-        }
-        return prev;
-      });
-    }, 10000);
+  const switchState = () => {
+    const newState = pedestrianState === "wait" ? "go" : "wait";
+    updatePedestrianState(newState);
   
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleToggle = () => {
-    if (!isBlocked) {
-      setPedestrianState((prev) => (prev === "wait" ? "go" : "wait"));
+    if (newState === "go") {
+      if (currentLightState === "Green") {
+        setTrafficLightState("Red");
+      }
+    } else {
+      setTrafficLightState("Green");
     }
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      switchState();
+    }, 10000);
+  
+    return () => clearInterval(interval);
+  }, [currentLightState, pedestrianState]);
+
   return (
-    <div className="pedestrian-traffic-light">
+    <div className={`pedestrian-traffic-light ${orientation}-pedestrian`}>
       <div className={`pedestrian-light ${pedestrianState === "wait" ? "red" : "grey"}`}>Wait</div>
       <div className={`pedestrian-light ${pedestrianState === "go" ? "green" : "grey"}`}>Go</div>
-      <button onClick={handleToggle} disabled={isBlocked} className="pedestrian-btn">
+      <button onClick={switchState} className="btn btn-primary pedestrian-btn">
         Switch
       </button>
     </div>
