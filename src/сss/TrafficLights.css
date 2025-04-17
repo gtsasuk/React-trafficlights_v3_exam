@@ -1,0 +1,18 @@
+.traffic-light {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 10px;
+  }
+  
+  .vertical {
+    flex-direction: column;
+    width: 80px;
+  }
+  
+  .horizontal {
+    flex-direction: row;
+    height: 80px;
+  }
+  

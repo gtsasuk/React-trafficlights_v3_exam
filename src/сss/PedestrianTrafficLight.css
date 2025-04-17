@@ -1,0 +1,39 @@
+.pedestrian-traffic-light {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 10px;
+}
+
+.pedestrian-light {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin: 10px;
+  line-height: 50px;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+}
+
+.red {
+  background-color: red;
+}
+
+.green {
+  background-color: green;
+}
+
+.grey {
+  background-color: grey;
+}
+
+.pedestrian-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 16px;
+  color: #fff;
+}
