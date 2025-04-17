@@ -9,7 +9,7 @@ const PedestrianTrafficLight = () => {
     orientation,
     pedestrianStateFromGoogle,
     setTrafficLightState,
-    currentLightState, // потрібен для перевірки стану авто-світлофора
+    currentLightState,
   } = useContext(TrafficLightsContext);
 
   const [pedestrianState, setPedestrianState] = useState("wait");
@@ -64,7 +64,7 @@ const PedestrianTrafficLight = () => {
     <div className={`pedestrian-traffic-light ${orientation}-pedestrian`}>
       <div className={`pedestrian-light ${pedestrianState === "wait" ? "red" : "grey"}`}>Wait</div>
       <div className={`pedestrian-light ${pedestrianState === "go" ? "green" : "grey"}`}>Go</div>
-      <button onClick={switchState} className="btn btn-primary pedestrian-btn">
+      <button onClick={switchState} disabled={pedestrianState === "wait"} className="btn btn-primary pedestrian-btn">
         Switch
       </button>
     </div>

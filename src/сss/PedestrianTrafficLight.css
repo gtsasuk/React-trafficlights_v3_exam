@@ -56,3 +56,7 @@
 .pedestrian-btn:hover {
   background-color: #0056b3;
 }
+
+.pedestrian-btn:disabled {
+  background-color: rgb(99, 99, 99) !important;
+}
