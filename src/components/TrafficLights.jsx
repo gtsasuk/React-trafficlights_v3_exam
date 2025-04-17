@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import "../сss/TrafficLights.css"
 
 const TrafficLights = () => {
-  const { orientation, clickCounts, handleClick, settings } = useContext(TrafficLightsContext);
+  const { orientation, clickCounts, handleClick, settings, currentLightState } = useContext(TrafficLightsContext);
 
   return (
     <motion.div
@@ -16,7 +16,7 @@ const TrafficLights = () => {
       transition={{ duration: 0.5 }}
     >
       {clickCounts.map((light) => (
-        <Light key={light.id} tlColor={light.color} onClick={(e) => handleClick(light.color, e)} brightness={settings.brightness} blinkCount={settings.blinkCount} />
+        <Light key={light.id} tlColor={light.color} onClick={(e) => handleClick(light.color, e)} brightness={settings.brightness} blinkCount={settings.blinkCount} isActive={currentLightState?.toLowerCase() === light.color.toLowerCase()} />
       ))}
     </motion.div>
   );

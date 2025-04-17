@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../сss/Light.css";
 
-const Light = ({ tlColor = "red", onClick, count, brightness = 1, blinkCount = 2 }) => {
+const Light = ({ tlColor = "red", onClick, count, brightness = 1, blinkCount = 2, isActive = false }) => {
   const [isBlinking, setIsBlinking] = useState(false);
 
   const handleClick = (e) => {
@@ -11,6 +11,14 @@ const Light = ({ tlColor = "red", onClick, count, brightness = 1, blinkCount = 2
     setTimeout(() => setIsBlinking(false), 1000 * blinkCount);
     onClick(e); 
   };
+
+  useEffect(() => {
+    if (isActive) {
+      setIsBlinking(true);
+      const timeout = setTimeout(() => setIsBlinking(false), 1000 * blinkCount);
+      return () => clearTimeout(timeout);
+    }
+  }, [isActive, blinkCount]);
 
   return (
     <motion.div
@@ -30,6 +38,11 @@ Light.propTypes = {
   onClick: PropTypes.func.isRequired,
   brightness: PropTypes.number.isRequired,
   blinkCount: PropTypes.number.isRequired,
+  isActive: PropTypes.bool,
+};
+
+Light.defaultProps = {
+  isActive: false,
 };
 
 export default Light;
