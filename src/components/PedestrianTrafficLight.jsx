@@ -5,7 +5,7 @@ import "../сss/PedestrianTrafficLight.css"
 const PedestrianTrafficLight = () => {
   const [pedestrianState, setPedestrianState] = useState("wait");
   const [isBlocked, setIsBlocked] = useState(false);
-  const { currentLightState } = useContext(TrafficLightsContext);
+  const { currentLightState, setTrafficLightState } = useContext(TrafficLightsContext);
 
   useEffect(() => {
     if (currentLightState?.toLowerCase() === "green") {
@@ -16,15 +16,29 @@ const PedestrianTrafficLight = () => {
     }
   }, [currentLightState]);
 
+
+  useEffect(() => {
+    if (pedestrianState === "go") {
+      // Для пішоходів "go" — авто повинно зупинитись → червоне світло
+      setTrafficLightState("Red");
+    } else if (pedestrianState === "wait") {
+      // Пішоходи чекають → авто їде → зелене світло
+      setTrafficLightState("Green");
+    }
+  }, [pedestrianState]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isBlocked) {
-        setPedestrianState((prev) => (prev === "wait" ? "go" : "wait"));
-      }
+      setPedestrianState((prev) => {
+        if (!isBlocked) {
+          return prev === "wait" ? "go" : "wait";
+        }
+        return prev;
+      });
     }, 10000);
-
+  
     return () => clearInterval(interval);
-  }, [isBlocked]);
+  }, []);
 
   const handleToggle = () => {
     if (!isBlocked) {
@@ -34,10 +48,10 @@ const PedestrianTrafficLight = () => {
 
   return (
     <div className="pedestrian-traffic-light">
-      <div className={`pedestrian-light ${pedestrianState === "wait" ? "red" : "grey"}`}>Чекай</div>
-      <div className={`pedestrian-light ${pedestrianState === "go" ? "green" : "grey"}`}>Йди</div>
+      <div className={`pedestrian-light ${pedestrianState === "wait" ? "red" : "grey"}`}>Wait</div>
+      <div className={`pedestrian-light ${pedestrianState === "go" ? "green" : "grey"}`}>Go</div>
       <button onClick={handleToggle} disabled={isBlocked} className="pedestrian-btn">
-        Перемкнути
+        Switch
       </button>
     </div>
   );

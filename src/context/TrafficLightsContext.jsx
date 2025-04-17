@@ -174,6 +174,42 @@ const TrafficLightsProvider = ({ children }) => {
       .catch((error) => console.error("Помилка оновлення settings:", error));
   };
 
+  const setTrafficLightState = (newState) => {
+    const updatedData = clickCounts.map((light) =>
+      light.color === newState
+        ? { ...light, clickcount: light.clickcount + 1 }
+        : light
+    );
+    setClickCounts(updatedData);
+  
+    const trafficLight = stateFromGoogle.find(
+      (light) => light.name.toLowerCase() === orientation.toLowerCase()
+    );
+  
+    if (trafficLight) {
+      setCurrentLightState(newState);
+  
+      fetch(`${GOOGLE_API_URL}`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({
+          action: "updateState",
+          id: trafficLight.id,
+          state: newState,
+        }),
+        mode: "cors",
+      })
+        .then(() => {
+          setStateFromGoogle((prevState) =>
+            prevState.map((light) =>
+              light.id === trafficLight.id ? { ...light, state: newState } : light
+            )
+          );
+        })
+        .catch((error) => console.error("Error updating state in Google Sheets:", error));
+    }
+  };
+
   return (
     <TrafficLightsContext.Provider
       value={{
@@ -188,6 +224,7 @@ const TrafficLightsProvider = ({ children }) => {
         stateFromGoogle,
         currentLightState,
         resetClickCounts,
+        setTrafficLightState
       }}
     >
       {children}
